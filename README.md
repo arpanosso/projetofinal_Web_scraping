@@ -55,7 +55,7 @@ universidade, no exemplo, selecione **10061 - UNESP CONSOLIDADA**.
 **5)** Novos campos serão apresentados, então, fizemos o preenchimento
 dos mesmos, como apresentado abaixo, para verificar os filtros
 disponíveis. O app apresenta um relatório com *infobox*’s e gráficos,
-contuido, sem os dados.
+contudo, sem a tabela de dados de interesse.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_05.png" width="800px" style="display: block; margin: auto;" />
 
@@ -70,20 +70,27 @@ contuido, sem os dados.
 
 **7)** Será apresentado a tabela com os dados, ou seja, encontramos a
 nossa **url base**:
-“<https://ape.unesp.br/orcamento_anual/ddp_tabela.php>”
+“<https://ape.unesp.br/orcamento_anual/ddp_tabela.php>”, pois essa é a
+tabela que necessitamos.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_07.png" width="800px" style="display: block; margin: auto;" />
 
 <br />
 
-**8)** para entender as requisições realizadas, utilizamos a opção de
-Inspecionar “Ctrl + shift + I”, em **Network**, limpamos os
-procedimentos, atualizamos a página com o **F5** e orgamizamos os
-processos por tipo. Observando o tipo “document”, clicamos em
-**ddp\_tabela.php**.
+**8)** Para entender as requisições realizadas, utilizamos a opção de
+Inspecionar “Ctrl + Shift + I”, em **Network**, atualizamos a página com
+o **F5** e ordenamos os processos por tipo (Type). Observando o tipo
+“document”, clicamos em **ddp\_tabela.php**.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_08.png" width="800px" style="display: block; margin: auto;" />
 
 <br />
 
-**9)** Observe que a requisição realizada foi do tipo **GET**
+**9)** A requisição realizada foi do tipo **POST**.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_10.png" width="800px" style="display: block; margin: auto;" />
+
+**10)** Rolando a aba do *Header*, verificamos o parâmetros do **body**
+da requisição, destacado abaixo.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_11.png" width="800px" style="display: block; margin: auto;" />

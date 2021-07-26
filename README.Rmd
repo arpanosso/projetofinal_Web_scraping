@@ -60,7 +60,7 @@ knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofina
 
 <br />
 
-**5)** Novos campos serão apresentados, então, fizemos o preenchimento dos mesmos, como apresentado abaixo, para verificar os filtros disponíveis. O app apresenta um relatório com *infobox*'s e gráficos, contuido, sem os dados.
+**5)** Novos campos serão apresentados, então, fizemos o preenchimento dos mesmos, como apresentado abaixo, para verificar os filtros disponíveis. O app apresenta um relatório com *infobox*'s e gráficos, contudo, sem a tabela de dados de interesse.
 
 
 ```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
@@ -80,7 +80,7 @@ knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofina
 
 <br />
 
-**7)** Será apresentado a tabela com os dados, ou seja, encontramos a nossa **url base**: "https://ape.unesp.br/orcamento_anual/ddp_tabela.php"
+**7)** Será apresentado a tabela com os dados, ou seja, encontramos a nossa **url base**: "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", pois essa é a tabela que necessitamos.
 
 ```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
 knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_07.png")
@@ -88,7 +88,7 @@ knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofina
 
 <br />
 
-**8)** Para entender as requisições realizadas, utilizamos a opção de Inspecionar "Ctrl + shift + I", em **Network**, limpamos os procedimentos, atualizamos a página com o **F5** e orgamizamos os processos por tipo. Observando o tipo "document", clicamos em **ddp_tabela.php**.
+**8)** Para entender as requisições realizadas, utilizamos a opção de Inspecionar "Ctrl + Shift + I", em **Network**, atualizamos a página com o **F5** e ordenamos os processos por tipo (Type). Observando o tipo "document", clicamos em **ddp_tabela.php**.
 
 ```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
 knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_08.png")
@@ -96,14 +96,18 @@ knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofina
 
 <br />
 
-**9)** Observe que a requisição realizada foi do tipo **GET**
+**9)** A requisição realizada foi do tipo **POST**.
+
+```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
+knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_10.png")
+```
+
+**10)** Rolando a aba do *Header*, verificamos o parâmetros do **body** da requisição, destacado abaixo.
 
 
-
-
-
-
-
+```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
+knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_11.png")
+```
 
 
 
