@@ -1,36 +1,89 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# projetofinal\_Web\_scraping
+# Projeto Final - R4DS2
+
+### Aluno: Alan R. Panosso
+
+### Data: 26/07/2021
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of projetofinal\_Web\_scraping is to …
+Projeto final apresentado os instrutores Julio Trecenti e Caio Lente da
+Curso-R como parte das exigências para a finalização do curso de Web
+scraping.
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+Objetivo do projeto é criar um produto de dados a partir do portal de
+transparência da UNESP. Além a aquisição e parseamento da informação,
+serão apresentados os tratamentos iniciais e a construção de alguns
+gráficos e apresentação de resultados.
 
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
+# Aquisição de dados
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/master/examples>.
+**OBS**: Para melhor acompanhamento do material, utilize o navegador
+Google Chrome:
 
-You can also embed plots, for example:
+**1)** Acesse o endereço <https://www2.unesp.br/>
 
-![](README_files/figure-gfm/pressure-1.png)<!-- -->
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_01.png" width="800px" style="display: block; margin: auto;" />
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub.
+<br />
+
+**2)** Clique em *Transparência* e em seguida selecione *Transparência
+Unesp*.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_02.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**3)** Na próxima página, no setor *GESTÃO*, acesse **Despesas pagas**,
+para acessar os dados da execussão orçamentária da universidade nos
+últimos anos.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_03.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**4)** Será apresentado um campo para selecionar uma das unidade da
+universidade, no exemplo, selecione **10061 - UNESP CONSOLIDADA**.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_04.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**5)** Novos campos serão apresentados, então, fizemos o preenchimento
+dos mesmos, como apresentado abaixo, para verificar os filtros
+disponíveis. O app apresenta um relatório com *infobox*’s e gráficos,
+contuido, sem os dados.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_05.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**6)** Rolando a página até o final, observamos a opção para acesso da
+**Tabela Completa**, e selecionamos essa opção.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_06.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**7)** Será apresentado a tabela com os dados, ou seja, encontramos a
+nossa **url base**:
+“<https://ape.unesp.br/orcamento_anual/ddp_tabela.php>”
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_07.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**8)** para entender as requisições realizadas, utilizamos a opção de
+Inspecionar “Ctrl + shift + I”, em **Network**, limpamos os
+procedimentos, atualizamos a página com o **F5** e orgamizamos os
+processos por tipo. Observando o tipo “document”, clicamos em
+**ddp\_tabela.php**.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_08.png" width="800px" style="display: block; margin: auto;" />
+
+<br />
+
+**9)** Observe que a requisição realizada foi do tipo **GET**
