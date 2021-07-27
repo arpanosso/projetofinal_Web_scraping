@@ -231,29 +231,38 @@ computador.
 unidades <- 1:53
 anos <- 2016:2020
 meses <- 1:12
+parametros <- expand.grid(unidades,anos,meses)
 caminho <- "output/unesp_despesas/"
 
-download_unesp <- function(i, par, dir){
-  bodys<-list(
-    txtunidade= par[i,1],
-    txtano= par[i,2],
-    txtmes_inicial= par[i,3],
-    txtmes_final= par[i,3],
+download_unesp <- function(indice, par, dir){
+  unidade =as.numeric(par[indice,1])
+  ano = as.numeric(par[indice,2])
+  mes = as.numeric(par[indice,3])
+  
+  body_unesp<-list(
+    txtunidade=unidade ,
+    txtano= ano,
+    txtmes_inicial= mes,
+    txtmes_final= mes,
     operacao_atual= "buscar_campos",
     token_ddp= ""
   )
-  arquivo <- paste0(dir,"/",nome_unidade(par[i,1]),"_", par[i,3],"_",par[i,2],".html")
+  
+  arquivo <- paste0(dir,"/",nome_unidade(unidade),"_", mes,"_",ano,".html")
   r_unesp <- httr::POST(
     "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", 
     body = body_unesp, 
     httr::write_disk(arquivo,overwrite = TRUE))
-  return(arquivo)
 }
 
-
-# parametros <- expand.grid(unidades,anos,meses)
-# i <- 1:2
+# i <- 1:3 #1:nrow(parametros)
 # purrr::map(i, purrr::possibly(download_unesp, ""), par= parametros, dir=caminho)
+
+# Usando o future e o furrr
+
+# future::plan("multisession")
+# 
+# furrr::future_map(i, purrr::possibly(download_unesp, ""), par= parametros, dir=caminho)
 ```
 
 Após o donwload, os arquivos serão apresentados como abaixo:
@@ -276,6 +285,8 @@ parse_job <- function(dir){
     rvest::html_table(header = FALSE) |>   
     tibble::as_tibble() 
 }
+
+
 
 # gasto_unesp <- purrr::map_df(arquivos_baixados, 
 #                             purrr::possibly(parse_job, data.frame() ), .id = "arquivos_baixados")
