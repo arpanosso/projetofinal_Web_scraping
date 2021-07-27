@@ -144,13 +144,6 @@ httr::content(r_unesp, encoding = "ISO-8859-1")  |>
 Transformando a tabela em data.frame.
 
 ``` r
-# Função para mudar o formato dos números
-muda_numero <- function(x){
-    as.numeric(
-       stringr::str_replace(stringr::str_remove_all(x,"\\."),",",".")
-       )
-}
-
 httr::content(r_unesp, encoding = "ISO-8859-1")  |> 
   xml2::xml_find_first("//table/tbody") |> 
   rvest::html_table(header = FALSE) |>   
@@ -274,7 +267,7 @@ purrr::map(i, purrr::possibly(download_unesp, ""))
 #> [[3]]
 #> [1] "output/unesp_despesas/3_1_2016.html"
 tictoc::toc()
-#> 11.41 sec elapsed
+#> 10.92 sec elapsed
 ```
 
 Vamos utilizar multisession
@@ -292,7 +285,7 @@ furrr::future_map(i, purrr::possibly(download_unesp, ""))
 #> [[3]]
 #> [1] "output/unesp_despesas/3_1_2016.html"
 tictoc::toc()
-#> 6.17 sec elapsed
+#> 7.86 sec elapsed
 ```
 
 Agora vamos adicionar a barra de progesso e realizar o download de todos
@@ -318,12 +311,12 @@ progressr::with_progress({
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_13.png" width="800px" style="display: block; margin: auto;" />
 
-Após o donwload, os arquivos serão apresentados como abaixo:
+Após o download, os arquivos serão apresentados como abaixo:
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_12.png" width="800px" style="display: block; margin: auto;" />
 
 Os arquivos podem ser acessados no [link do google
-drive](https://drive.google.com/file/d/1h8fuYAAcRZE1w8icQPTwIOI3owIs6_TR/view?usp=sharing)
+drive](https://drive.google.com/drive/folders/1QVm49MaT8P2cVt5iBs-x2PsYie-BM58M?usp=sharing)
 
 ## Parseando
 
@@ -352,6 +345,14 @@ readr::write_rds(gasto_unesp,"data-raw/gasto_unesp.rds")
 Deixando a tabela mais bonitinha
 
 ``` r
+# Função para mudar o formato dos números
+muda_numero <- function(x){
+    as.numeric(
+       stringr::str_replace(stringr::str_remove_all(x,"\\."),",",".")
+       )
+}
+
+# carregando a base de dados e arrumando a tabela
 gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>    
   dplyr::mutate(
     dplyr::across(X2:X11,muda_numero)
@@ -367,6 +368,7 @@ gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>
       categoria == 5 ~ "DESPESAS_INVESTIMENTOS",
       TRUE ~ as.character(categoria)
     ),
+    arquivos_baixados = fs::path_file(arquivos_baixados),
     X1 = stringr::str_remove_all(X1,"[:digit:]|-")
    ) |> 
   dplyr::relocate(categoria) |> 
@@ -384,19 +386,53 @@ gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>
       total= X11
     )
 dplyr::glimpse(gasto_unesp)
-#> Rows: 50,482
+#> Rows: 50,635
 #> Columns: 13
-#> $ categoria                     <chr> "PESSOAL_REFLEXOS", "PESSOAL_REFLEXOS", ~
-#> $ arquivos_baixados             <chr> "output/unesp_despesas/BAURU ADMINISTRAÃ~
-#> $ despesa                       <chr> "  Folha de Pagamento", "  Encargos com ~
-#> $ tesouro_orcamento_vigente     <dbl> 939476.09, 52389.78, 7614.40, 2149.00, 1~
+#> $ categoria                     <chr> "DESPESAS_CORRENTES", "DESPESAS_CORRENTE~
+#> $ arquivos_baixados             <chr> "10_10_2016.html", "10_10_2016.html", "1~
+#> $ despesa                       <chr> "  Diárias", "  Utilidade Pública", "  L~
+#> $ tesouro_orcamento_vigente     <dbl> 4026.00, 15975.95, 5944.41, 15672.60, 20~
 #> $ convenios_orcamento_vigente   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
-#> $ rec_propria_orcamento_vigente <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00~
-#> $ tesouro_restos_pagar          <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00~
+#> $ rec_propria_orcamento_vigente <dbl> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ~
+#> $ tesouro_restos_pagar          <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 5241~
 #> $ convenios_restos_pagar        <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
-#> $ rec_propria_restos_pagar      <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 316, 0, 0,~
+#> $ rec_propria_restos_pagar      <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
 #> $ tesouro_diversos_credores     <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
 #> $ convenios_diversos_credores   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
 #> $ rec_propria_diversos_credores <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
-#> $ total                         <dbl> 939476.09, 52389.78, 7614.40, 2149.00, 1~
+#> $ total                         <dbl> 4026.00, 15975.95, 5944.41, 15672.60, 20~
+```
+
+Deixando a tabela com os nomes das unidade e criando uma coluna com a
+data
+
+``` r
+gasto_unesp |> 
+  dplyr::mutate(
+    arquivos_baixados = stringr::str_remove(arquivos_baixados, ".html")
+  ) |> 
+  tidyr::separate(arquivos_baixados, into = c("unidade","mes","ano"),
+                  sep="_", convert = TRUE) |> 
+  dplyr::mutate(
+    unidade = nome_unidade(unidade),
+    data = lubridate::make_date(month = mes, year = ano)) |> 
+  dplyr::glimpse()
+#> Rows: 50,635
+#> Columns: 16
+#> $ categoria                     <chr> "DESPESAS_CORRENTES", "DESPESAS_CORRENTE~
+#> $ unidade                       <chr> "CENTRO DE RADIO E TELEVISAO CULTURAL E ~
+#> $ mes                           <int> 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, ~
+#> $ ano                           <int> 2016, 2016, 2016, 2016, 2016, 2016, 2016~
+#> $ despesa                       <chr> "  Diárias", "  Utilidade Pública", "  L~
+#> $ tesouro_orcamento_vigente     <dbl> 4026.00, 15975.95, 5944.41, 15672.60, 20~
+#> $ convenios_orcamento_vigente   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_orcamento_vigente <dbl> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ~
+#> $ tesouro_restos_pagar          <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 5241~
+#> $ convenios_restos_pagar        <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_restos_pagar      <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ tesouro_diversos_credores     <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ convenios_diversos_credores   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_diversos_credores <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ total                         <dbl> 4026.00, 15975.95, 5944.41, 15672.60, 20~
+#> $ data                          <date> 2016-10-01, 2016-10-01, 2016-10-01, 201~
 ```

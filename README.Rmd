@@ -156,13 +156,6 @@ httr::content(r_unesp, encoding = "ISO-8859-1")  |>
 
 Transformando a tabela em data.frame.
 ```{r}
-# Função para mudar o formato dos números
-muda_numero <- function(x){
-    as.numeric(
-       stringr::str_replace(stringr::str_remove_all(x,"\\."),",",".")
-       )
-}
-
 httr::content(r_unesp, encoding = "ISO-8859-1")  |> 
   xml2::xml_find_first("//table/tbody") |> 
   rvest::html_table(header = FALSE) |>   
@@ -307,13 +300,13 @@ knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofina
 ```
 
 
-Após o donwload, os arquivos serão apresentados como abaixo:
+Após o download, os arquivos serão apresentados como abaixo:
 
 ```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
 knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_12.png")
 ```
 
-Os arquivos podem ser acessados no [link do google drive](https://drive.google.com/file/d/1h8fuYAAcRZE1w8icQPTwIOI3owIs6_TR/view?usp=sharing)
+Os arquivos podem ser acessados no [link do google drive](https://drive.google.com/drive/folders/1QVm49MaT8P2cVt5iBs-x2PsYie-BM58M?usp=sharing)
 
 
 ## Parseando
@@ -344,6 +337,14 @@ readr::write_rds(gasto_unesp,"data-raw/gasto_unesp.rds")
 Deixando a tabela mais bonitinha
 
 ```{r}
+# Função para mudar o formato dos números
+muda_numero <- function(x){
+    as.numeric(
+       stringr::str_replace(stringr::str_remove_all(x,"\\."),",",".")
+       )
+}
+
+# carregando a base de dados e arrumando a tabela
 gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>    
   dplyr::mutate(
     dplyr::across(X2:X11,muda_numero)
@@ -359,6 +360,7 @@ gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>
       categoria == 5 ~ "DESPESAS_INVESTIMENTOS",
       TRUE ~ as.character(categoria)
     ),
+    arquivos_baixados = fs::path_file(arquivos_baixados),
     X1 = stringr::str_remove_all(X1,"[:digit:]|-")
    ) |> 
   dplyr::relocate(categoria) |> 
@@ -376,5 +378,20 @@ gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>
       total= X11
     )
 dplyr::glimpse(gasto_unesp)
+```
+
+Deixando a tabela com os nomes das unidade e criando uma coluna com a data
+
+```{r}
+gasto_unesp |> 
+  dplyr::mutate(
+    arquivos_baixados = stringr::str_remove(arquivos_baixados, ".html")
+  ) |> 
+  tidyr::separate(arquivos_baixados, into = c("unidade","mes","ano"),
+                  sep="_", convert = TRUE) |> 
+  dplyr::mutate(
+    unidade = nome_unidade(unidade),
+    data = lubridate::make_date(month = mes, year = ano)) |> 
+  dplyr::glimpse()
 ```
 
