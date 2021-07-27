@@ -159,7 +159,7 @@ httr::content(r_unesp, encoding = "ISO-8859-1")  |>
 #> 3 0103 - Aux~ 98.795~ 0,00  0,00  0,00     0,00  0,00  0,00  0,00  0,00  98.795~
 ```
 
-Inpecionando a página, verificamos que a unesp tem 53 unidades, assim,
+Inspecionando a página, verificamos que a unesp tem 53 unidades, assim,
 criamos a seguinte função para renomear as unidades, quando necessário:
 
 ``` r
@@ -256,8 +256,8 @@ download_unesp <- function(indice){
   return(arquivo)
 }
 
-# vamos testar com 4 arquivos
-i <- 1:4 #1:nrow(parametros)
+# vamos testar com 3 arquivos
+i <- 1:3
 tictoc::tic()
 purrr::map(i, purrr::possibly(download_unesp, ""))
 #> [[1]]
@@ -268,11 +268,8 @@ purrr::map(i, purrr::possibly(download_unesp, ""))
 #> 
 #> [[3]]
 #> [1] "output/unesp_despesas//REITORIA_1_2016.html"
-#> 
-#> [[4]]
-#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
 tictoc::toc()
-#> 14.48 sec elapsed
+#> 11.31 sec elapsed
 ```
 
 Vamos utilizar multisession
@@ -289,38 +286,31 @@ furrr::future_map(i, purrr::possibly(download_unesp, ""))
 #> 
 #> [[3]]
 #> [1] "output/unesp_despesas//REITORIA_1_2016.html"
-#> 
-#> [[4]]
-#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
 tictoc::toc()
-#> 8.95 sec elapsed
+#> 7.11 sec elapsed
 ```
 
-Agora vamos adicionar a barra de progesso
+Agora vamos adicionar a barra de progesso e realizar o download
 
 ``` r
+# Definindo todas as iterações
+i <- 1:nrow(parametros)
+
+# Craindo a função maybe_
 maybe_download_unesp_prog <- function(indice, prog){
   prog()
   f <- purrr::possibly(download_unesp, "")
   f(indice)
 }
 
+# Rodando com a barra de progresso
 progressr::with_progress({
   prog <- progressr::progressor(along = i)
   furrr::future_map(i, maybe_download_unesp_prog, prog=prog)
 })
-#> [[1]]
-#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
-#> 
-#> [[2]]
-#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
-#> 
-#> [[3]]
-#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
-#> 
-#> [[4]]
-#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
 ```
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_13.png" width="800px" style="display: block; margin: auto;" />
 
 Após o donwload, os arquivos serão apresentados como abaixo:
 
@@ -336,24 +326,24 @@ arquivos_baixados <- fs::dir_ls(caminho)
 
 parse_job <- function(dir){
   html <- xml2::read_html(dir, encoding = "ISO-8859-1")
-  
   html |> 
     xml2::xml_find_first("//table/tbody") |> 
     rvest::html_table(header = FALSE) |>   
     tibble::as_tibble() 
 }
 
-
-
-# gasto_unesp <- purrr::map_df(arquivos_baixados, 
-#                             purrr::possibly(parse_job, data.frame() ), .id = "arquivos_baixados")
+gasto_unesp <- furrr::future_map_dfr(arquivos_baixados, 
+                             purrr::possibly(parse_job, data.frame())
+                             , .id = "arquivos_baixados")
 ```
 
-## Salvando em um diretório
+Salvando em um diretório
 
 ``` r
-# readr::write_rds(gasto_unesp,"data-raw/gasto_unesp.rds")
+readr::write_rds(gasto_unesp,"data-raw/gasto_unesp.rds")
 ```
+
+Deixando a tabela mais bonitinha
 
 ``` r
 gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>    
