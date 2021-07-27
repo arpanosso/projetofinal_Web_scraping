@@ -17,13 +17,9 @@ curso de **Web scraping**.
 Objetivo do projeto é criar um produto de dados a partir do portal de
 transparência da UNESP.
 
-Além a aquisição e parseamento da informação, serão apresentados os
-tratamentos iniciais e a construção de alguns gráficos e apresentação de
-resultados.
-
 # Aquisição de dados
 
-**1)** Acesse o endereço <https://www2.unesp.br/>
+**1)** Acesse o endereço <https://www2.unesp.br/>.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_01.png" width="800px" style="display: block; margin: auto;" />
 
@@ -44,17 +40,16 @@ a partir de 2016.
 
 <br />
 
-**4)** Será apresentado um campo para selecionar uma das unidades da
+**4)** Será apresentado um campo para a escolha de uma das unidades da
 universidade, no exemplo, selecione **10061 - UNESP CONSOLIDADA**.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_04.png" width="800px" style="display: block; margin: auto;" />
 
 <br />
 
-**5)** Novos campos serão apresentados, então, fizemos o preenchimento
-dos mesmos, como apresentado abaixo, para verificar os filtros
-disponíveis. Será gerado um relatório com *infobox*’s e gráficos,
-contudo, sem a tabela de dados de interesse.
+**5)** Novos campos serão apresentados, então, faça o preenchimento dos
+mesmos. Será gerado um relatório com *infobox*’s e gráficos, contudo,
+sem a tabela de dados de interesse.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_05.png" width="800px" style="display: block; margin: auto;" />
 
@@ -67,29 +62,29 @@ acesso da **Tabela Completa**, como apresentado abaixo.
 
 <br />
 
-**7)** Será apresentado a tabela com os dados, ou seja, encontramos a
-nossa **url base**:
+**7)** Ao selecionarmos, será apresentado a tabela com os dados para
+podermos raspar, portanto a **url base** será:
 “<https://ape.unesp.br/orcamento_anual/ddp_tabela.php>”.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_07.png" width="800px" style="display: block; margin: auto;" />
 
 <br />
 
-**8)** Para entender as requisições realizadas, utilizamos a opção
-Inspecionar do navegador, clicando **Network**, atualizamos a página com
-o **F5** e ordenamos os processos por tipo (Type). Observando o tipo
-“document”, clicamos em **ddp\_tabela.php**.
+**8)** Para entender as requisições realizadas pela página, utilizamos a
+opção **Inspecionar** do navegador, após isso, clicando **Network**, e
+atualizamos a página com o **F5**. Observando o tipo `document`,
+clicamos em **ddp\_tabela.php**.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_08.png" width="800px" style="display: block; margin: auto;" />
 
 <br />
 
-**9)** A requisição realizada foi do tipo **POST**.
+**9)** Observe que a requisição realizada foi do tipo **POST**.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_10.png" width="800px" style="display: block; margin: auto;" />
 
-**10)** Rolando a aba do *Header*, verificamos o parâmetros do **body**
-da requisição, destacados abaixo.
+**10)** Rolando a aba do *Header*, pode-se verificar “os argumentos”
+utilizados no **body** da requisição.
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_11.png" width="800px" style="display: block; margin: auto;" />
 
@@ -98,22 +93,23 @@ da requisição, destacados abaixo.
 Vamos testar a nossa requisição, e observamos que a tabela foi acessada.
 
 ``` r
-u_base  <- "https://ape.unesp.br/orcamento_anual/ddp_tabela.php"
+u_unesp  <- "https://ape.unesp.br/orcamento_anual/ddp_tabela.php"
 
 body_unesp <- list(
-  txtunidade= 1,
-  txtano= 2016,
-  txtmes_inicial= 1,
-  txtmes_final= 1,
+  txtunidade= 1, # unidade adminstrativa
+  txtano= 2016, # ano
+  txtmes_inicial= 1, # ano inicial
+  txtmes_final= 1, # ano final
   operacao_atual= "buscar_campos",
   token_ddp= ""
 )
 
 # Vamos salvar o arquivo para testar posteriormente
 r_unesp <- httr::POST(
-  u_base, 
+  u_unesp, 
   body = body_unesp,
-  httr::write_disk("output/unesp.html"))
+  httr::write_disk("output/unesp.html",
+                   overwrite = TRUE))
 
 # teste do arquivo
 minha_pagina_teste <- readr::read_file("output/unesp.html")
@@ -122,7 +118,7 @@ minha_pagina_teste <- readr::read_file("output/unesp.html")
 Seguindo as instruções, vamos checar o encoding do site
 
 ``` r
-readr::guess_encoding(u_base)
+readr::guess_encoding(u_unesp)
 #> # A tibble: 2 x 2
 #>   encoding   confidence
 #>   <chr>           <dbl>
@@ -150,62 +146,17 @@ muda_numero <- function(x){
        )
 }
 
-
 httr::content(r_unesp, encoding = "ISO-8859-1")  |> 
-  xml2::xml_find_all("//table/tbody") |> 
+  xml2::xml_find_first("//table/tbody") |> 
   rvest::html_table(header = FALSE) |>   
-  as.data.frame() |> 
-  dplyr::mutate(
-    dplyr::across(X2:X11,muda_numero)
-    ) |> 
-  dplyr::filter(stringr::str_starts(X1,"0")) |> 
-  dplyr::mutate(
-    categoria = stringr::str_sub(X1,2,2),
-    categoria = dplyr::case_when(
-      categoria == 1 ~ "PESSOAL_REFLEXOS",
-      categoria == 2 ~ "PLANTOES",
-      categoria == 3 ~ "DESPESAS_CORRENTES",
-      categoria == 4 ~ "DIVIDAS_SENTENCAS",
-      categoria == 5 ~ "DESPESAS_INVESTIMENTOS",
-      TRUE ~ as.character(categoria)
-    ),
-    X1 = stringr::str_remove_all(X1,"[:digit:]|-")
-   ) |> 
-  dplyr::relocate(categoria) |> 
-  dplyr::rename(
-      despesa = X1,
-      tesouro_orcamento_vigente = X2,
-      convenios_orcamento_vigente = X3,
-      rec_propria_orcamento_vigente= X4,
-      tesouro_restos_pagar= X5,
-      convenios_restos_pagar= X6,
-      rec_propria_restos_pagar= X7,
-      tesouro_diversos_credores= X8,
-      convenios_diversos_credores= X9,
-      rec_propria_diversos_credores= X10,
-      total= X11
-    ) |> 
+  tibble::as_tibble() |> 
   head(3)
-#>          categoria                despesa tesouro_orcamento_vigente
-#> 1 PESSOAL_REFLEXOS     Folha de Pagamento                 469308.56
-#> 2 PESSOAL_REFLEXOS   Encargos com Pessoal                  10101.09
-#> 3 PESSOAL_REFLEXOS        Auxílio Funeral                  98795.08
-#>   convenios_orcamento_vigente rec_propria_orcamento_vigente
-#> 1                           0                             0
-#> 2                           0                             0
-#> 3                           0                             0
-#>   tesouro_restos_pagar convenios_restos_pagar rec_propria_restos_pagar
-#> 1            154370580                      0                  6200.00
-#> 2             25146047                      0                  1395.92
-#> 3                    0                      0                     0.00
-#>   tesouro_diversos_credores convenios_diversos_credores
-#> 1                         0                           0
-#> 2                         0                           0
-#> 3                         0                           0
-#>   rec_propria_diversos_credores        total
-#> 1                             0 154846088.23
-#> 2                             0  25157544.37
-#> 3                             0     98795.08
+#> # A tibble: 3 x 11
+#>   X1          X2      X3    X4    X5       X6    X7    X8    X9    X10   X11    
+#>   <chr>       <chr>   <chr> <chr> <chr>    <chr> <chr> <chr> <chr> <chr> <chr>  
+#> 1 0101 - Fol~ 469.30~ 0,00  0,00  154.370~ 0,00  6.20~ 0,00  0,00  0,00  154.84~
+#> 2 0102 - Enc~ 10.101~ 0,00  0,00  25.146.~ 0,00  1.39~ 0,00  0,00  0,00  25.157~
+#> 3 0103 - Aux~ 98.795~ 0,00  0,00  0,00     0,00  0,00  0,00  0,00  0,00  98.795~
 ```
 
 Inpecionando a página, verificamos que a unesp tem 53 unidades, assim,
@@ -274,7 +225,7 @@ nome_unidade <- function(x){
 
 Agora que sabemos arrumar nossa tabela, vamos fazer o donwload de todas
 as tabelas dos anos de 2016 a 2020, salvando-as em um diretório do nosso
-computador..
+computador.
 
 ``` r
 unidades <- 1:53
@@ -308,8 +259,7 @@ download_unesp <- function(unidade,ano,mes,caminho){
 #  }
 ```
 
-Após o donwload, os arquivos serão apresentados como abaixo, dentro da
-pasta:
+Após o donwload, os arquivos serão apresentados como abaixo:
 
 <img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_12.png" width="800px" style="display: block; margin: auto;" />
 
@@ -325,9 +275,9 @@ parse_job <- function(dir){
   html <- xml2::read_html(dir, encoding = "ISO-8859-1")
   
   html |> 
-    xml2::xml_find_all("//table/tbody") |> 
+    xml2::xml_find_first("//table/tbody") |> 
     rvest::html_table(header = FALSE) |>   
-    as.data.frame() 
+    tibble::as_tibble() 
 }
 
 # gasto_unesp <- purrr::map_df(arquivos_baixados, 
@@ -338,4 +288,54 @@ parse_job <- function(dir){
 
 ``` r
 # readr::write_rds(gasto_unesp,"data-raw/gasto_unesp.rds")
+```
+
+``` r
+gasto_unesp <- readr::read_rds("data-raw/gasto_unesp.rds") |>    
+  dplyr::mutate(
+    dplyr::across(X2:X11,muda_numero)
+    ) |> 
+  dplyr::filter(stringr::str_starts(X1,"0")) |> 
+  dplyr::mutate(
+    categoria = stringr::str_sub(X1,2,2),
+    categoria = dplyr::case_when(
+      categoria == 1 ~ "PESSOAL_REFLEXOS",
+      categoria == 2 ~ "PLANTOES",
+      categoria == 3 ~ "DESPESAS_CORRENTES",
+      categoria == 4 ~ "DIVIDAS_SENTENCAS",
+      categoria == 5 ~ "DESPESAS_INVESTIMENTOS",
+      TRUE ~ as.character(categoria)
+    ),
+    X1 = stringr::str_remove_all(X1,"[:digit:]|-")
+   ) |> 
+  dplyr::relocate(categoria) |> 
+  dplyr::rename(
+      despesa = X1,
+      tesouro_orcamento_vigente = X2,
+      convenios_orcamento_vigente = X3,
+      rec_propria_orcamento_vigente= X4,
+      tesouro_restos_pagar= X5,
+      convenios_restos_pagar= X6,
+      rec_propria_restos_pagar= X7,
+      tesouro_diversos_credores= X8,
+      convenios_diversos_credores= X9,
+      rec_propria_diversos_credores= X10,
+      total= X11
+    )
+dplyr::glimpse(gasto_unesp)
+#> Rows: 50,482
+#> Columns: 13
+#> $ categoria                     <chr> "PESSOAL_REFLEXOS", "PESSOAL_REFLEXOS", ~
+#> $ arquivos_baixados             <chr> "output/unesp_despesas/BAURU ADMINISTRAÃ~
+#> $ despesa                       <chr> "  Folha de Pagamento", "  Encargos com ~
+#> $ tesouro_orcamento_vigente     <dbl> 939476.09, 52389.78, 7614.40, 2149.00, 1~
+#> $ convenios_orcamento_vigente   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_orcamento_vigente <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00~
+#> $ tesouro_restos_pagar          <dbl> 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00~
+#> $ convenios_restos_pagar        <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_restos_pagar      <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 316, 0, 0,~
+#> $ tesouro_diversos_credores     <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ convenios_diversos_credores   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ rec_propria_diversos_credores <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+#> $ total                         <dbl> 939476.09, 52389.78, 7614.40, 2149.00, 1~
 ```
