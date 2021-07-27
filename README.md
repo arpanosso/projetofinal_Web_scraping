@@ -115,6 +115,11 @@ r_unesp <- httr::POST(
 minha_pagina_teste <- readr::read_file("output/unesp.html")
 ```
 
+Abrindo a págino baixada no navegador verificamos que a tabela está
+presente.
+
+<img src="https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_11_1.png" width="800px" style="display: block; margin: auto;" />
+
 Seguindo as instruções, vamos checar o encoding do site
 
 ``` r
@@ -248,7 +253,7 @@ download_unesp <- function(indice){
     token_ddp= ""
   )
   
-  arquivo <- paste0("output/unesp_despesas/","/",nome_unidade(unidade),"_", mes,"_",ano,".html")
+  arquivo <- paste0("output/unesp_despesas/",unidade,"_", mes,"_",ano,".html")
   r_unesp <- httr::POST(
     "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", 
     body = body_unesp, 
@@ -261,15 +266,15 @@ i <- 1:3
 tictoc::tic()
 purrr::map(i, purrr::possibly(download_unesp, ""))
 #> [[1]]
-#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
+#> [1] "output/unesp_despesas/1_1_2016.html"
 #> 
 #> [[2]]
-#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
+#> [1] "output/unesp_despesas/2_1_2016.html"
 #> 
 #> [[3]]
-#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
+#> [1] "output/unesp_despesas/3_1_2016.html"
 tictoc::toc()
-#> 11.31 sec elapsed
+#> 11.41 sec elapsed
 ```
 
 Vamos utilizar multisession
@@ -279,18 +284,19 @@ future::plan("multisession")
 tictoc::tic()
 furrr::future_map(i, purrr::possibly(download_unesp, ""))
 #> [[1]]
-#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
+#> [1] "output/unesp_despesas/1_1_2016.html"
 #> 
 #> [[2]]
-#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
+#> [1] "output/unesp_despesas/2_1_2016.html"
 #> 
 #> [[3]]
-#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
+#> [1] "output/unesp_despesas/3_1_2016.html"
 tictoc::toc()
-#> 7.11 sec elapsed
+#> 6.17 sec elapsed
 ```
 
-Agora vamos adicionar a barra de progesso e realizar o download
+Agora vamos adicionar a barra de progesso e realizar o download de todos
+os arquivos.
 
 ``` r
 # Definindo todas as iterações

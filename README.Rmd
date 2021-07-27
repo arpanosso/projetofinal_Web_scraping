@@ -134,6 +134,11 @@ r_unesp <- httr::POST(
 minha_pagina_teste <- readr::read_file("output/unesp.html")
 ```
 
+Abrindo a págino baixada no navegador verificamos que a tabela está presente.
+
+```{r echo=FALSE, fig.cap="",fig.align='center',out.width = "800px"}
+knitr::include_graphics("https://raw.githubusercontent.com/arpanosso/projetofinal_Web_scraping/master/inst/ws_11_1.png")
+```
 
 Seguindo as instruções, vamos checar  o encoding do site
 
@@ -252,7 +257,7 @@ download_unesp <- function(indice){
     token_ddp= ""
   )
   
-  arquivo <- paste0("output/unesp_despesas/","/",nome_unidade(unidade),"_", mes,"_",ano,".html")
+  arquivo <- paste0("output/unesp_despesas/",unidade,"_", mes,"_",ano,".html")
   r_unesp <- httr::POST(
     "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", 
     body = body_unesp, 
@@ -276,7 +281,7 @@ furrr::future_map(i, purrr::possibly(download_unesp, ""))
 tictoc::toc()
 ```
 
-Agora vamos adicionar a barra de progesso e realizar o download
+Agora vamos adicionar a barra de progesso e realizar o download de todos os arquivos.
 
 ```{r, eval=FALSE}
 # Definindo todas as iterações
