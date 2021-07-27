@@ -234,10 +234,10 @@ meses <- 1:12
 parametros <- expand.grid(unidades,anos,meses)
 caminho <- "output/unesp_despesas/"
 
-download_unesp <- function(indice, par, dir){
-  unidade =as.numeric(par[indice,1])
-  ano = as.numeric(par[indice,2])
-  mes = as.numeric(par[indice,3])
+download_unesp <- function(indice){
+  unidade =as.numeric(parametros[indice,1])
+  ano = as.numeric(parametros[indice,2])
+  mes = as.numeric(parametros[indice,3])
   
   body_unesp<-list(
     txtunidade=unidade ,
@@ -248,21 +248,78 @@ download_unesp <- function(indice, par, dir){
     token_ddp= ""
   )
   
-  arquivo <- paste0(dir,"/",nome_unidade(unidade),"_", mes,"_",ano,".html")
+  arquivo <- paste0("output/unesp_despesas/","/",nome_unidade(unidade),"_", mes,"_",ano,".html")
   r_unesp <- httr::POST(
     "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", 
     body = body_unesp, 
     httr::write_disk(arquivo,overwrite = TRUE))
+  return(arquivo)
 }
 
-# i <- 1:3 #1:nrow(parametros)
-# purrr::map(i, purrr::possibly(download_unesp, ""), par= parametros, dir=caminho)
+# vamos testar com 4 arquivos
+i <- 1:4 #1:nrow(parametros)
+tictoc::tic()
+purrr::map(i, purrr::possibly(download_unesp, ""))
+#> [[1]]
+#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
+#> 
+#> [[2]]
+#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
+#> 
+#> [[3]]
+#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
+#> 
+#> [[4]]
+#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
+tictoc::toc()
+#> 14.48 sec elapsed
+```
 
-# Usando o future e o furrr
+Vamos utilizar multisession
 
-# future::plan("multisession")
-# 
-# furrr::future_map(i, purrr::possibly(download_unesp, ""), par= parametros, dir=caminho)
+``` r
+future::plan("multisession")
+tictoc::tic()
+furrr::future_map(i, purrr::possibly(download_unesp, ""))
+#> [[1]]
+#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
+#> 
+#> [[2]]
+#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
+#> 
+#> [[3]]
+#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
+#> 
+#> [[4]]
+#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
+tictoc::toc()
+#> 8.95 sec elapsed
+```
+
+Agora vamos adicionar a barra de progesso
+
+``` r
+maybe_download_unesp_prog <- function(indice, prog){
+  prog()
+  f <- purrr::possibly(download_unesp, "")
+  f(indice)
+}
+
+progressr::with_progress({
+  prog <- progressr::progressor(along = i)
+  furrr::future_map(i, maybe_download_unesp_prog, prog=prog)
+})
+#> [[1]]
+#> [1] "output/unesp_despesas//UNESP CONSOLIDADA_1_2016.html"
+#> 
+#> [[2]]
+#> [1] "output/unesp_despesas//REITORIA ADMINISTRAÇÃO SUPERIOR_1_2016.html"
+#> 
+#> [[3]]
+#> [1] "output/unesp_despesas//REITORIA_1_2016.html"
+#> 
+#> [[4]]
+#> [1] "output/unesp_despesas//INSTITUTO DE FISICA TEORICA_1_2016.html"
 ```
 
 Após o donwload, os arquivos serão apresentados como abaixo:
