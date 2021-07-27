@@ -237,30 +237,27 @@ anos <- 2016:2020
 meses <- 1:12
 caminho <- "output/unesp_despesas/"
 
-download_unesp <- function(unidade,ano,mes,caminho){
-  u_base  <- "https://ape.unesp.br/orcamento_anual/ddp_tabela.php"
-  body_unesp <- list(
-    txtunidade= unidade,
-    txtano= ano,
-    txtmes_inicial= mes,
-    txtmes_final= mes,
+download_unesp <- function(i, par, dir){
+  bodys<-list(
+    txtunidade= par[i,1],
+    txtano= par[i,2],
+    txtmes_inicial= par[i,3],
+    txtmes_final= par[i,3],
     operacao_atual= "buscar_campos",
     token_ddp= ""
   )
-  arquivo <- paste0(caminho,"/",nome_unidade(unidade),"_", mes,"_",ano,".html")
+  arquivo <- paste0(dir,"/",nome_unidade(par[i,1]),"_", par[i,3],"_",par[i,2],".html")
   r_unesp <- httr::POST(
-    u_base, 
+    "https://ape.unesp.br/orcamento_anual/ddp_tabela.php", 
     body = body_unesp, 
     httr::write_disk(arquivo,overwrite = TRUE))
+  return(arquivo)
 }
-# 
-# for(i in 48:53){
-#    for(j in 2016:2020){ 
-#      for(k in 1:12){
-#        download_unesp(i,j,k,caminho)
-#      }
-#    }
-#  }
+
+
+# parametros <- expand.grid(unidades,anos,meses)
+# i <- 1:2
+# purrr::map(i, purrr::possibly(download_unesp, ""), par= parametros, dir=caminho)
 ```
 
 Após o donwload, os arquivos serão apresentados como abaixo:
